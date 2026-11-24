@@ -513,7 +513,7 @@
 
     <div class="card card-pad section" id="builderCard">
       <h2>Resume builder</h2>
-      <p class="sub">Fix up your resume right here: auto-fixes standardize section headings, clean up bullets and remove duplicate and runaway blank lines. Edit the text freely, then download a clean, formatted PDF.</p>
+      <p class="sub">Fix up your resume right here: auto-fixes split long paragraphs into short bullet points — one idea per line — standardize section headings, and remove duplicates and runaway blank lines. Edit the text freely, then download a clean, formatted PDF.</p>
       <textarea id="builderText" rows="12" aria-label="Editable Resume text"></textarea>
       <div class="dl-row">
         <button class="btn btn-primary btn-sm" id="builderFix">Apply auto-fixes</button>
@@ -1159,7 +1159,7 @@ function extractPdf(arrayBuffer){
     var pages = [];
     for(var i=1;i<=pdf.numPages;i++){ pages.push(pdf.getPage(i).then(function(page){
       return page.getTextContent().then(function(tc){
-        return tc.items.map(function(it){ return it.str; }).join(" ");
+        return tc.items.map(function(it){ return it.str + (it.hasEOL ? "\n" : " "); }).join("");
       });
     })); }
     return Promise.all(pages).then(function(texts){ return texts.join("\n"); });
@@ -1623,24 +1623,187 @@ function renderRewrite(r){
 }
 
 /* ---------------- Resume builder ---------------- */
-var SECTION_HEADS = { "summary":"PROFESSIONAL SUMMARY","professional summary":"PROFESSIONAL SUMMARY","profile":"PROFESSIONAL SUMMARY","objective":"PROFESSIONAL SUMMARY","career objective":"PROFESSIONAL SUMMARY","about me":"PROFESSIONAL SUMMARY","skills":"SKILLS","technical skills":"SKILLS","key skills":"SKILLS","core skills":"SKILLS","core competencies":"SKILLS","experience":"EXPERIENCE","work experience":"EXPERIENCE","professional experience":"EXPERIENCE","employment history":"EXPERIENCE","work history":"EXPERIENCE","education":"EDUCATION","academic background":"EDUCATION","educational qualifications":"EDUCATION","qualifications":"EDUCATION","projects":"PROJECTS","key projects":"PROJECTS","personal projects":"PROJECTS","academic projects":"PROJECTS","certifications":"CERTIFICATIONS","certificates":"CERTIFICATIONS","courses":"CERTIFICATIONS","achievements":"ACHIEVEMENTS","awards":"ACHIEVEMENTS","achievements & awards":"ACHIEVEMENTS","languages":"LANGUAGES","interests":"INTERESTS","hobbies":"INTERESTS","declaration":"DECLARATION","contact":"CONTACT","contact details":"CONTACT","personal details":"PERSONAL DETAILS" };
+var SECTION_HEADS = { "summary":"PROFESSIONAL SUMMARY","professional summary":"PROFESSIONAL SUMMARY","profile":"PROFESSIONAL SUMMARY","objective":"PROFESSIONAL SUMMARY","career objective":"PROFESSIONAL SUMMARY","about me":"PROFESSIONAL SUMMARY","skills":"SKILLS","technical skills":"SKILLS","key skills":"SKILLS","core skills":"SKILLS","core competencies":"SKILLS","experience":"EXPERIENCE","work experience":"EXPERIENCE","professional experience":"EXPERIENCE","employment history":"EXPERIENCE","work history":"EXPERIENCE","education":"EDUCATION","academic background":"EDUCATION","educational qualifications":"EDUCATION","qualifications":"EDUCATION","projects":"PROJECTS","key projects":"PROJECTS","personal projects":"PROJECTS","academic projects":"PROJECTS","certifications":"CERTIFICATIONS","certificates":"CERTIFICATIONS","courses":"CERTIFICATIONS","achievements":"ACHIEVEMENTS","awards":"ACHIEVEMENTS","achievements & awards":"ACHIEVEMENTS","languages":"LANGUAGES","interests":"INTERESTS","hobbies":"INTERESTS","declaration":"DECLARATION","contact":"CONTACT","contact details":"CONTACT","personal details":"PERSONAL DETAILS","academic project":"PROJECTS","soft skills":"SOFT SKILLS","soft skills & languages":"SOFT SKILLS & LANGUAGES" };
+function isTitleOrUpper(s){
+  if(s === s.toUpperCase()) return true;
+  return s.split(/\s+/).every(function(w){ return !/^[a-z]/.test(w); });
+}
+/* PDF/DOCX extraction often glues a whole page into one run-on line, with
+   section headings buried mid-line. Find known headings inside a line and
+   mark line-break positions in front of them — but only when the heading is
+   Title Case / UPPERCASE or followed by a colon, so ordinary prose words
+   ("experience in leading...") are not mistaken for headings. */
+function breakInlineHeadings(line){
+  var keys = Object.keys(SECTION_HEADS).sort(function(a,b){ return b.length - a.length; });
+  var lower = line.toLowerCase(), breaks = [], spans = [];
+  keys.forEach(function(k){
+    var idx = 0;
+    while(true){
+      var i = lower.indexOf(k, idx);
+      if(i === -1) break;
+      idx = i + k.length;
+      var end = i + k.length;
+      var inside = spans.some(function(sp){ return i >= sp[0] && i < sp[1]; });
+      if(inside) continue;
+      var before = i === 0 ? "" : line.charAt(i - 1);
+      var after = line.charAt(end);
+      if(!(i === 0 || /[\s•▪◦·|]/.test(before))) continue;
+      if(!(after === "" || /[\s:]/.test(after) || after === "：")) continue;
+      spans.push([i, end]);
+      var matched = line.substr(i, k.length);
+      if(line.slice(0, i).trim() && (isTitleOrUpper(matched) || after === ":" || after === "：")) breaks.push(i);
+    }
+  });
+  if(!breaks.length) return line;
+  breaks.sort(function(a,b){ return a - b; });
+  var out = "", prev = 0;
+  breaks.forEach(function(p){ out += line.slice(prev, p) + "\n"; prev = p; });
+  return out + line.slice(prev);
+}
+function splitSentences(s){
+  var PH = "\u0001";
+  var t = String(s)
+    .replace(/(\d)\.(\d)/g, "$1" + PH + "$2")
+    .replace(/\b([A-Za-z])\.([A-Za-z])\./g, "$1" + PH + "$2" + PH)
+    .replace(/\b(e\.g|i\.e|etc|viz|dr|mr|mrs|ms|vs|approx|dept)\./gi, function(m){ return m.split(".").join(PH); });
+  var out = [], m, re = /[^.!?;]+[.!?;]*/g;
+  while((m = re.exec(t)) !== null){
+    var p = m[0].split(PH).join(".").trim();
+    if(p) out.push(p);
+  }
+  return out;
+}
+function cleanBulletText(s){
+  var t = String(s).replace(/\s+/g, " ").trim();
+  t = t.replace(/^[•▪◦\-*·]+\s*/, "").replace(/[.\s]+$/, "").replace(/^and\s+/i, "");
+  return t ? t.charAt(0).toUpperCase() + t.slice(1) : t;
+}
+/* One bullet per idea: sentences up to ~24 words stay whole; longer ones are
+   split at clause boundaries (commas, semicolons, dashes) and packed into
+   bullets of at most ~22 words, hard-splitting only as a last resort. */
+function bulletizeSentence(sentence){
+  var s = String(sentence).trim();
+  if(wordCount(s) <= 24) return [cleanBulletText(s)];
+  var pieces = s.split(/,\s+|;\s+|\s+—\s+|\s+–\s+|\s+-\s+/).map(function(p){ return p.trim(); }).filter(Boolean);
+  var out = [], cur = "";
+  function flush(){ if(cur){ out.push(cleanBulletText(cur)); cur = ""; } }
+  pieces.forEach(function(p){
+    var words = p.split(/\s+/);
+    while(words.length > 22){
+      flush();
+      out.push(cleanBulletText(words.slice(0, 22).join(" ")));
+      words = words.slice(22);
+    }
+    p = words.join(" ");
+    if(!p) return;
+    if(!cur) cur = p;
+    else if(wordCount(cur) + 1 + wordCount(p) <= 22) cur = cur + ", " + p;
+    else { flush(); cur = p; }
+  });
+  flush();
+  return out.filter(Boolean);
+}
+function looksLikeTitle(t, section){
+  if(t.length > 110 || wordCount(t) > 16) return false;
+  if(/[.!?;]$/.test(t)) return false;
+  var first = (t.split(/\s+/)[0] || "").toLowerCase().replace(/[^a-z]/g, "");
+  if(ACTION_VERBS.indexOf(first) !== -1) return false;
+  if(t.indexOf("|") !== -1) return true;
+  if(/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\s+(19|20)\d{2}/i.test(t)) return true;
+  if(/\b(19|20)\d{2}\b/.test(t) && /[-–—]/.test(t)) return true;
+  var caps = t.split(/\s+/).filter(function(w){ return /^[A-Z]/.test(w); }).length;
+  return caps >= 3 && (section === "EXPERIENCE" || section === "PROJECTS" || section === "EDUCATION" || section === "CERTIFICATIONS");
+}
+function isContacty(t){
+  return /@/.test(t) || /linkedin\.com|github\.com|https?:\/\/|www\./i.test(t) || /\+?\d[\d\s()-]{6,}\d/.test(t);
+}
 function improveResumeText(text){
-  var lines = String(text || "").split(/\r?\n/);
-  var out = [];
-  lines.forEach(function(raw){
-    var t = raw.replace(/\s+$/, "").trim();
-    var headKey = t.replace(/[:：]\s*$/, "").toLowerCase();
-    if(SECTION_HEADS[headKey] && t.length < 42){
-      if(out.length && out[out.length-1] !== "") out.push("");
-      out.push(SECTION_HEADS[headKey]);
+  var raw = String(text || "").replace(/\r\n?/g, "\n").replace(/\t/g, " ");
+  var blocks = [], seen = {}, section = null, sawHeading = false, sawContent = false;
+  function pushBlock(kind, txt){
+    var t = String(txt || "").replace(/\s+/g, " ").trim();
+    if(!t) return;
+    if(kind !== "head"){
+      var key = kind + "|" + t.toLowerCase();
+      if(seen[key]) return;
+      seen[key] = 1;
+    }
+    blocks.push({ kind: kind, text: t });
+  }
+  function pushHeading(std){
+    var last = blocks[blocks.length - 1];
+    if(last && last.kind === "head" && last.text === std) return;
+    pushBlock("head", std);
+    section = std; sawHeading = true;
+  }
+  function bodySegment(t){
+    if(looksLikeTitle(t, section)){ pushBlock("plain", t); return; }
+    splitSentences(t).forEach(function(sent){
+      bulletizeSentence(sent).forEach(function(b){ if(b) pushBlock("bullet", "• " + b); });
+    });
+  }
+  function contentSegment(t){
+    /* Comma-separated skill / tool lists stay as one readable line instead
+       of being shredded into one-word bullets. */
+    var commas = (t.match(/,/g) || []).length;
+    var noPunct = !/[.!?;]/.test(t.replace(/\d\.\d/g, "").replace(/\b[A-Za-z]\./g, ""));
+    if(commas >= 3 && noPunct && wordCount(t) / (commas + 1) <= 4){ pushBlock("plain", t); return; }
+    bodySegment(t);
+  }
+  function headerSegment(t){
+    /* Before the first heading: name and contact lines stay plain. A run-on
+       header glued to body text with "|" separators is split apart — the
+       contact parts stay plain, the prose becomes bullets. */
+    if(t.indexOf("|") !== -1 && wordCount(t) > 18){
+      t.split("|").forEach(function(part){
+        var p = part.trim();
+        if(!p) return;
+        if(isContacty(p) || wordCount(p) <= 6) pushBlock("plain", p);
+        else contentSegment(p);
+      });
       return;
     }
-    var b = t.replace(/^[▪◦·*]+\s*/, "• ").replace(/^-\s+/, "• ");
-    if(b !== "" && out.length && out[out.length-1] === b) return;
-    if(b === "" && (out.length === 0 || out[out.length-1] === "")) return;
-    out.push(b);
+    if(!sawContent && wordCount(t) <= 8 && !/[.!?;]/.test(t)){ pushBlock("plain", t); return; }
+    if(isContacty(t) && wordCount(t) <= 20){ pushBlock("plain", t); return; }
+    contentSegment(t);
+  }
+  function processSegment(rawSeg){
+    var t = String(rawSeg).replace(/\s+/g, " ").trim();
+    t = t.replace(/^[•▪◦·*]+\s*/, "").replace(/^-\s+/, "");
+    if(!t) return;
+    var headKey = t.replace(/[:：]\s*$/, "").toLowerCase();
+    if(SECTION_HEADS[headKey] && t.length < 42){ pushHeading(SECTION_HEADS[headKey]); return; }
+    var m = t.match(/^([A-Za-z][A-Za-z &/]{2,40}?)\s*[:：]\s+(.+)$/);
+    if(m && SECTION_HEADS[m[1].trim().toLowerCase()]){
+      pushHeading(SECTION_HEADS[m[1].trim().toLowerCase()]);
+      processSegment(m[2]);
+      sawContent = true;
+      return;
+    }
+    var startKey = null;
+    Object.keys(SECTION_HEADS).sort(function(a,b){ return b.length - a.length; }).forEach(function(k){
+      if(startKey) return;
+      if(t.toLowerCase().indexOf(k) === 0 && /^\s/.test(t.slice(k.length)) && isTitleOrUpper(t.substr(0, k.length))) startKey = k;
+    });
+    if(startKey){
+      pushHeading(SECTION_HEADS[startKey]);
+      processSegment(t.slice(startKey.length));
+      sawContent = true;
+      return;
+    }
+    if(!sawHeading) headerSegment(t); else contentSegment(t);
+    sawContent = true;
+  }
+  raw.split("\n").forEach(function(line){
+    breakInlineHeadings(line).split("\n").forEach(function(sub){
+      sub.split(/[•▪◦]/).forEach(processSegment);
+    });
   });
-  while(out.length && out[out.length-1] === "") out.pop();
+  var out = [];
+  blocks.forEach(function(b){
+    if(b.kind === "head" && out.length) out.push("");
+    out.push(b.text);
+  });
   return out.join("\n");
 }
 var builderForId = null;
@@ -1652,30 +1815,48 @@ function renderBuilder(r){
   if(has && builderForId !== r.id){ $("builderText").value = r.resumeText; builderForId = r.id; }
 }
 $("builderFix").addEventListener("click", function(){
-  $("builderText").value = improveResumeText($("builderText").value);
-  toast("Auto-fixes applied — headings standardized, bullets cleaned, duplicates removed");
+  var fixed = improveResumeText($("builderText").value);
+  $("builderText").value = fixed;
+  if(currentResult){
+    /* Keep the original text for Reset, then re-score the ATS checks from
+       the fixed text so the improvement is visible right away. */
+    if(!currentResult.origResumeText) currentResult.origResumeText = currentResult.resumeText;
+    currentResult.resumeText = fixed;
+    var jdMode = currentResult.score !== null && currentResult.score !== undefined;
+    currentResult.ats = computeATS(fixed, skillStatsFor(currentResult, jdMode));
+    renderExtras(currentResult);
+    $("builderText").value = fixed;
+  }
+  toast("Auto-fixes applied — long lines split into short bullets, headings standardized, duplicates removed");
 });
 $("builderReset").addEventListener("click", function(){
-  if(currentResult && currentResult.resumeText) $("builderText").value = currentResult.resumeText;
+  if(currentResult && currentResult.resumeText) $("builderText").value = currentResult.origResumeText || currentResult.resumeText;
 });
 $("builderPdf").addEventListener("click", function(){ downloadImprovedPdf($("builderText").value); });
 function downloadImprovedPdf(text){
   if(!(window.jspdf && window.jspdf.jsPDF)){ toast("PDF library is still loading — try again in a moment"); return; }
   if(!String(text || "").trim()){ toast("Nothing to export yet — the builder is empty"); return; }
+  /* Always structure the text first: if the builder still holds run-on
+     extracted text, rendering it line-by-line would lose everything after
+     the first wrapped lines. Every resulting line is rendered in full,
+     flowing onto extra pages as needed. */
+  var fixed = improveResumeText(text);
   var doc = new window.jspdf.jsPDF();
   var y = 16, pageH = 282;
   function ensure(n){ if(y + n > pageH){ doc.addPage(); y = 16; } }
   var firstDone = false;
   doc.setTextColor(11,31,58);
-  String(text).split(/\r?\n/).forEach(function(raw){
+  fixed.split("\n").forEach(function(raw){
     var t = raw.trim();
     if(!t){ y += 3; return; }
     var isHead = t.length <= 42 && t === t.toUpperCase() && /[A-Z]/.test(t);
-    if(!firstDone){
-      doc.setFont("helvetica","bold"); doc.setFontSize(17); ensure(9);
-      doc.splitTextToSize(t, 180).slice(0,2).forEach(function(w){ ensure(8); doc.text(w, 15, y); y += 8; });
+    var isBullet = /^•\s/.test(t);
+    if(!firstDone && !isHead && !isBullet){
+      doc.setFont("helvetica","bold"); doc.setFontSize(17);
+      doc.splitTextToSize(t, 180).forEach(function(w){ ensure(8); doc.text(w, 15, y); y += 8; });
       firstDone = true; return;
     }
+    firstDone = true;
     if(isHead){
       y += 3; ensure(8); doc.setFont("helvetica","bold"); doc.setFontSize(12); doc.setTextColor(15,79,184);
       doc.text(t, 15, y); doc.setTextColor(11,31,58); y += 6; return;
