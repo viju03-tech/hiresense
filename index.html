@@ -1717,8 +1717,15 @@ function looksLikeTitle(t, section){
 function isContacty(t){
   return /@/.test(t) || /linkedin\.com|github\.com|https?:\/\/|www\./i.test(t) || /\+?\d[\d\s()-]{6,}\d/.test(t);
 }
+function normalizeResumeGlyphs(text){
+  /* Some PDF generators embed bullets as private-use glyphs (Symbol font,
+     U+E000–U+F8FF) or other round bullet characters. Neither the ATS bullet
+     check nor jsPDF's built-in fonts handle those — jsPDF re-encodes a
+     whole line as UTF-16 when one appears — so normalize them to "•". */
+  return String(text || "").replace(/[\uE000-\uF8FF\u25CF\u25AA\u25E6]/g, "•");
+}
 function improveResumeText(text){
-  var raw = String(text || "").replace(/\r\n?/g, "\n").replace(/\t/g, " ");
+  var raw = normalizeResumeGlyphs(text).replace(/\r\n?/g, "\n").replace(/\t/g, " ");
   var blocks = [], seen = {}, section = null, sawHeading = false, sawContent = false;
   function pushBlock(kind, txt){
     var t = String(txt || "").replace(/\s+/g, " ").trim();
@@ -1840,13 +1847,31 @@ function downloadImprovedPdf(text){
      extracted text, rendering it line-by-line would lose everything after
      the first wrapped lines. Every resulting line is rendered in full,
      flowing onto extra pages as needed. */
-  var fixed = improveResumeText(text);
+  var clean = normalizeResumeGlyphs(text);
+  var fixed = improveResumeText(clean);
+  /* Completeness guard: the structured text must keep essentially all of
+     the resume's words. If structuring ever drops content on an unusual
+     input, fall back to the full text — this download must never come out
+     as just the header again. */
+  var structured = wordCount(fixed) >= Math.floor(wordCount(clean) * 0.9);
+  var pages;
+  try {
+    pages = renderResumePdf(structured ? fixed : clean, !structured);
+  } catch(err) {
+    /* One un-encodable line must not kill the whole download: retry with
+       the plain full-text renderer before giving up. */
+    try { pages = renderResumePdf(clean, true); }
+    catch(err2){ toast("Sorry — the PDF could not be generated from this text"); return; }
+  }
+  toast("Improved Resume PDF downloaded — " + pages + (pages === 1 ? " page" : " pages"));
+}
+function renderResumePdf(text, plain){
   var doc = new window.jspdf.jsPDF();
-  var y = 16, pageH = 282;
-  function ensure(n){ if(y + n > pageH){ doc.addPage(); y = 16; } }
-  var firstDone = false;
+  var y = 16, pageH = 282, pages = 1;
+  function ensure(n){ if(y + n > pageH){ doc.addPage(); pages++; y = 16; } }
+  var firstDone = !!plain;
   doc.setTextColor(11,31,58);
-  fixed.split("\n").forEach(function(raw){
+  String(text).split("\n").forEach(function(raw){
     var t = raw.trim();
     if(!t){ y += 3; return; }
     var isHead = t.length <= 42 && t === t.toUpperCase() && /[A-Z]/.test(t);
@@ -1865,7 +1890,7 @@ function downloadImprovedPdf(text){
     doc.splitTextToSize(t, 178).forEach(function(w){ ensure(5.5); doc.text(w, 16, y); y += 5.5; });
   });
   doc.save("hiresense-improved-resume.pdf");
-  toast("Improved Resume PDF downloaded");
+  return pages;
 }
 
 /* ---------------- Saved / shortlisted jobs ---------------- */
