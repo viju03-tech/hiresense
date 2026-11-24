@@ -318,7 +318,7 @@
   <!-- ============ ANALYZE ============ -->
   <section class="view active" id="view-analyze">
     <div class="hero">
-      <h1>See how your resume stacks up against <span class="hl">any job</span> — for real.</h1>
+      <h1>See how your Resume stacks up against <span class="hl">any job</span> — for real.</h1>
       <p>Upload your actual resume — a job description is optional. HireSense reads the file in your browser, extracts its text, and scans it against a 199-skill taxonomy covering tech and non-tech work — software, marketing, HR, accounts, sales, healthcare, teaching and more. With no job description you still get your detected skills, category breakdown, health checks and the jobs you can apply for; add one to also get a match score and semantic similarity. Different resume, different result. Every time.</p>
       <div class="hero-stats">
         <div><b>199</b><span>skills tracked</span></div>
@@ -331,11 +331,11 @@
 
     <div class="grid-2">
       <div class="card card-pad">
-        <h2>1 · Your resume</h2>
+        <h2>1 · Your Resume</h2>
         <p class="sub">PDF or DOCX. The text is extracted right here in your browser — nothing is uploaded to a server.</p>
-        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Upload resume file">
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Upload Resume file">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
-          <div class="dz-title">Drop your resume here, or tap to browse</div>
+          <div class="dz-title">Drop your Resume here, or tap to browse</div>
           <div class="dz-sub">PDF or DOCX · max 10 MB</div>
         </div>
         <input type="file" id="fileInput" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden />
@@ -345,7 +345,7 @@
           <button class="rm" id="fileRemove">Remove</button>
         </div>
         <div class="or-line">or paste the text instead</div>
-        <textarea id="resumeText" rows="5" placeholder="Paste your resume text here if you don't have the file handy…"></textarea>
+        <textarea id="resumeText" rows="5" placeholder="Paste your Resume text here if you don't have the file handy…"></textarea>
         <div class="ta-meta"><span>Used only if no file is selected</span><span id="resumeCount">0 words</span></div>
       </div>
 
@@ -369,7 +369,7 @@
     <div class="analyze-bar">
       <button class="btn btn-primary" id="analyzeBtn">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-        Analyze my resume
+        Analyze my Resume
       </button>
       <span class="status-line" id="statusLine"><span class="spinner"></span><span id="statusText">Reading your file…</span></span>
     </div>
@@ -387,7 +387,7 @@
 
   <!-- ============ RESULTS ============ -->
   <section class="view" id="view-results">
-    <button class="back-link" id="backToAnalyze">← Analyze another resume</button>
+    <button class="back-link" id="backToAnalyze">← Analyze another Resume</button>
     <div class="res-head">
       <div class="card card-pad score-card" id="scoreCard">
         <div class="donut-wrap">
@@ -404,7 +404,7 @@
             <div><b id="statMatched">0</b><span>skills matched</span></div>
             <div><b id="statMissing">0</b><span>skills missing</span></div>
             <div><b id="statJdSkills">0</b><span>skills in the job</span></div>
-            <div><b id="statWords">0</b><span>resume words read</span></div>
+            <div><b id="statWords">0</b><span>Resume words read</span></div>
           </div>
         </div>
       </div>
@@ -416,7 +416,7 @@
             <div><b id="statSkillsFound">0</b><span>skills detected</span></div>
             <div><b id="statCatsCovered">0</b><span>categories covered</span></div>
             <div><b id="statBestJobPct">—</b><span>best job match</span></div>
-            <div><b id="statWords2">0</b><span>resume words read</span></div>
+            <div><b id="statWords2">0</b><span>Resume words read</span></div>
           </div>
         </div>
       </div>
@@ -460,7 +460,7 @@
         <h2>Resume health checks</h2>
         <p class="sub">Basics recruiters and ATS systems look for.</p>
         <ul class="health-list" id="healthList"></ul>
-        <h2 style="margin-top:1.2rem" id="extraTitle">Also found in your resume</h2>
+        <h2 style="margin-top:1.2rem" id="extraTitle">Also found in your Resume</h2>
         <p class="sub" id="extraSub">Skills you have that this particular job didn't ask for — still worth keeping.</p>
         <div class="chips" id="extraChips"></div>
         <p class="empty-note" id="extraEmpty" style="display:none">No additional taxonomy skills detected in the resume.</p>
@@ -514,7 +514,7 @@
     <div class="card card-pad section" id="builderCard">
       <h2>Resume builder</h2>
       <p class="sub">Fix up your resume right here: auto-fixes standardize section headings, clean up bullets and remove duplicate and runaway blank lines. Edit the text freely, then download a clean, formatted PDF.</p>
-      <textarea id="builderText" rows="12" aria-label="Editable resume text"></textarea>
+      <textarea id="builderText" rows="12" aria-label="Editable Resume text"></textarea>
       <div class="dl-row">
         <button class="btn btn-primary btn-sm" id="builderFix">Apply auto-fixes</button>
         <button class="btn btn-ghost btn-sm" id="builderPdf">Download improved PDF</button>
@@ -596,13 +596,13 @@
 
   <!-- ============ COMPARE ============ -->
   <section class="view" id="view-compare">
-    <h1 style="font-size:1.7rem;margin:.2rem 0 .3rem">Compare two resumes</h1>
+    <h1 style="font-size:1.7rem;margin:.2rem 0 .3rem">Compare two Resumes</h1>
     <p style="color:var(--muted);margin:0 0 1.2rem;max-width:68ch">Upload two versions of a resume — an old and a new draft, or yours and a friend's — and see which one scores better, side by side. Add one job description to judge both against the same job; without one, they're compared on ATS score, skills and job fit.</p>
     <div class="grid-2">
       <div class="card card-pad">
         <h2>Resume A</h2>
         <p class="sub">PDF or DOCX, parsed in your browser — or paste the text.</p>
-        <div class="dropzone" id="cmpDzA" role="button" tabindex="0" aria-label="Upload resume A">
+        <div class="dropzone" id="cmpDzA" role="button" tabindex="0" aria-label="Upload Resume A">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
           <div class="dz-title">Drop Resume A here, or tap to browse</div>
           <div class="dz-sub">PDF or DOCX · max 10 MB</div>
@@ -615,7 +615,7 @@
       <div class="card card-pad">
         <h2>Resume B</h2>
         <p class="sub">PDF or DOCX, parsed in your browser — or paste the text.</p>
-        <div class="dropzone" id="cmpDzB" role="button" tabindex="0" aria-label="Upload resume B">
+        <div class="dropzone" id="cmpDzB" role="button" tabindex="0" aria-label="Upload Resume B">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5"/><path d="M12 3v12"/></svg>
           <div class="dz-title">Drop Resume B here, or tap to browse</div>
           <div class="dz-sub">PDF or DOCX · max 10 MB</div>
@@ -632,7 +632,7 @@
       <textarea id="cmpJd" rows="5" placeholder="Paste the job description here (optional)…"></textarea>
     </div>
     <div class="analyze-bar">
-      <button class="btn btn-primary" id="cmpBtn">Compare resumes</button>
+      <button class="btn btn-primary" id="cmpBtn">Compare Resumes</button>
     </div>
     <div class="error-box" id="cmpError" role="alert"></div>
     <div id="cmpResults" style="display:none;margin-top:1.4rem">
@@ -1139,13 +1139,13 @@ function recommendations(r){
     recs.push({ title:"Fix: " + h.label.replace(/ \(.*\)$/,""), body:"This basic check failed on your resume. Recruiters and ATS systems scan for it — adding it takes minutes and removes an easy rejection reason.", linkTitle:"Resume writing guide — Indeed Career Guide", link:"https://www.indeed.com/career-advice/resumes-cover-letters" });
   });
   if(r.semantic != null && r.semantic < 35 && r.jdSkills.length){
-    recs.push({ title:"Mirror the job's language", body:"Your semantic similarity is low (" + r.semantic + "%), which means your resume's wording differs a lot from the posting. Reuse the job's own phrasing for tools, responsibilities and outcomes where it truthfully matches your experience — ATS systems reward that overlap.", linkTitle:"ATS resume tips — Jobscan", link:"https://www.jobscan.co/blog/ats-resume/" });
+    recs.push({ title:"Mirror the job's language", body:"Your semantic similarity is low (" + r.semantic + "%), which means your resume's wording differs a lot from the posting. Reuse the job's own phrasing for tools, responsibilities and outcomes where it truthfully matches your experience — ATS systems reward that overlap.", linkTitle:"ATS Resume tips — Jobscan", link:"https://www.jobscan.co/blog/ats-resume/" });
   }
   if(!recs.length){
     if(r.hasJd === false){
-      recs.push({ title:"Your resume covers the basics", body:"All the standard health checks passed and your skills are on record. To sharpen it further, quantify your achievements (numbers, impact, scale) next to each skill, and paste a real job description here whenever you apply somewhere specific.", linkTitle:"Quantifying resume achievements — Indeed", link:"https://www.indeed.com/career-advice/resumes-cover-letters" });
+      recs.push({ title:"Your Resume covers the basics", body:"All the standard health checks passed and your skills are on record. To sharpen it further, quantify your achievements (numbers, impact, scale) next to each skill, and paste a real job description here whenever you apply somewhere specific.", linkTitle:"Quantifying Resume achievements — Indeed", link:"https://www.indeed.com/career-advice/resumes-cover-letters" });
     } else {
-      recs.push({ title:"You're fully covered for this job", body:"Every skill in this job description appears in your resume. To stand out further, quantify your achievements (numbers, impact, scale) next to each matched skill.", linkTitle:"Quantifying resume achievements — Indeed", link:"https://www.indeed.com/career-advice/resumes-cover-letters" });
+      recs.push({ title:"You're fully covered for this job", body:"Every skill in this job description appears in your resume. To stand out further, quantify your achievements (numbers, impact, scale) next to each matched skill.", linkTitle:"Quantifying Resume achievements — Indeed", link:"https://www.indeed.com/career-advice/resumes-cover-letters" });
     }
   }
   return recs;
@@ -1265,7 +1265,7 @@ function renderResults(r){
   $("jdMatchGrid").style.display = jdMode ? "" : "none";
   $("catTitle").textContent = jdMode ? "Match by category" : "Your skills by category";
   $("catSub").textContent = jdMode ? "How you cover each area of the job description." : "Skills detected in your resume, grouped by category — each bar shows your coverage of all 199 taxonomy skills in that area.";
-  $("extraTitle").textContent = jdMode ? "Also found in your resume" : "Skills detected in your resume";
+  $("extraTitle").textContent = jdMode ? "Also found in your Resume" : "Skills detected in your Resume";
   $("extraSub").textContent = jdMode ? "Skills you have that this particular job didn't ask for — still worth keeping." : "Every skill from the 199-skill taxonomy found in your resume text.";
   $("recSub").textContent = jdMode ? "Concrete next steps, ordered by impact — each missing skill links to a free official learning resource." : "Concrete next steps based on your resume's health checks and the skill gaps in your best-matching role.";
   if(!jdMode){
@@ -1565,7 +1565,7 @@ function renderPlan(r, jdMode){
       '<ul class="plan-steps">' +
       '<li><span class="step-n">1</span><span><b>Learn the fundamentals</b> — work through the free official resource: <a href="' + esc(s.resUrl) + '" target="_blank" rel="noopener">' + esc(s.resTitle) + ' →</a></span></li>' +
       '<li><span class="step-n">2</span><span><b>Practise deliberately</b> — follow the resource\'s own examples first, then build one small project or piece of work that uses ' + esc(s.name) + ' for real.</span></li>' +
-      '<li><span class="step-n">3</span><span><b>Prove it on your resume</b> — add ' + esc(s.name) + ' to your Skills section and write one bullet about what you made with it. Claim it only once you can talk about it in an interview.</span></li>' +
+      '<li><span class="step-n">3</span><span><b>Prove it on your Resume</b> — add ' + esc(s.name) + ' to your Skills section and write one bullet about what you made with it. Claim it only once you can talk about it in an interview.</span></li>' +
       '</ul></div>';
   }).join("");
 }
@@ -1684,7 +1684,7 @@ function downloadImprovedPdf(text){
     doc.splitTextToSize(t, 178).forEach(function(w){ ensure(5.5); doc.text(w, 16, y); y += 5.5; });
   });
   doc.save("hiresense-improved-resume.pdf");
-  toast("Improved resume PDF downloaded");
+  toast("Improved Resume PDF downloaded");
 }
 
 /* ---------------- Saved / shortlisted jobs ---------------- */
@@ -1791,7 +1791,7 @@ $("emailReport").addEventListener("click", function(){
   var r = currentResult;
   var best = (r.jobs || [])[0];
   var lines = [];
-  lines.push("HireSense resume analysis — " + r.fileName);
+  lines.push("HireSense Resume analysis — " + r.fileName);
   lines.push("Date: " + new Date(r.date).toLocaleString());
   if(r.score !== null && r.score !== undefined) lines.push("Job description match: " + r.score + "% (" + r.matched.length + " skills matched, " + r.missing.length + " missing)");
   else lines.push("Resume-only analysis (no job description was provided).");
@@ -1962,7 +1962,7 @@ $("dlCsv").addEventListener("click", function(){
     var isM = r.matched.some(function(m){ return m.name===s.name; });
     rows.push([s.name, s.cat, isM ? "Matched" : "Missing"]);
   });
-  r.extra.forEach(function(s){ rows.push([s.name, s.cat, "In resume (not requested)"]); });
+  r.extra.forEach(function(s){ rows.push([s.name, s.cat, "In Resume (not requested)"]); });
   var csv = rows.map(function(row){ return row.map(function(c){ return '"' + String(c).replace(/"/g,'""') + '"'; }).join(","); }).join("\n");
   var head = "HireSense Report\nFile," + '"' + r.fileName.replace(/"/g,'""') + '"' + "\nDate," + new Date(r.date).toLocaleString() + "\nSkill match," + (r.score!=null ? r.score + "%" : "n/a — no job description provided") + "\nSemantic similarity," + (r.semantic!=null ? r.semantic + "%" : "n/a — no job description provided") + "\n\n";
   downloadBlob(new Blob([head + csv], {type:"text/csv"}), "hiresense-report.csv");
@@ -1994,7 +1994,7 @@ $("dlPdf").addEventListener("click", function(){
     line("Missing skills (" + r.missing.length + ")", 13, true, 7);
     line(r.missing.length ? r.missing.map(function(s){return s.name;}).join(", ") : "None", 11, false, 9);
   } else {
-    line("Skills detected in resume (" + r.extra.length + ")", 13, true, 7);
+    line("Skills detected in Resume (" + r.extra.length + ")", 13, true, 7);
     line(r.extra.length ? r.extra.map(function(s){return s.name;}).join(", ") : "None", 11, false, 9);
     if(r.jobs && r.jobs.length){
       line("Best job matches", 13, true, 7);
