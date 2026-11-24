@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16
+    container_name: hiresense-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hiresense
+      POSTGRES_USER: hiresense
+      POSTGRES_PASSWORD: change_this_local_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - hiresense_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hiresense -d hiresense"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: hiresense-backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+psycopg://hiresense:change_this_local_password@db:5432/hiresense
+      SECRET_KEY: change-me-to-a-long-random-string
+      FRONTEND_ORIGIN: http://localhost:3000
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  frontend:
+    build: ./frontend
+    container_name: hiresense-frontend
+    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  hiresense_pgdata:

@@ -1,0 +1,18 @@
+fastapi
+uvicorn[standard]
+python-multipart
+pydantic-settings
+pydantic[email]
+sqlalchemy
+psycopg[binary]
+pymupdf
+python-docx
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt==4.0.1
+scikit-learn
+pytest
+httpx
+# Optional: sentence-transformers for embedding-based semantic similarity.
+# Only used when HIRESENSE_SEMANTIC_MODEL=1; TF-IDF is the default fallback.
+# sentence-transformers
