@@ -123,3 +123,4 @@ Built by **Viju B** (viju03-tech) — B.E. CSE, Sathyabama Institute of Science 
 ## License
 
 MIT — see [LICENSE](LICENSE).
+Live demo: https://viju03-tech.github.io/hiresense/
